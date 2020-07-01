@@ -7,8 +7,11 @@ import (
 )
 
 func main() {
+	// ルーティング
 	http.HandleFunc("/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
+
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -20,6 +23,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, p)
 }
 func editHandler(w http.ResponseWriter, r *http.Request) {
+	// 編集画面を描画する関数
 	title := r.URL.Path[6:]
 	p, err := loadPage(title)
 	if err != nil {
@@ -27,6 +31,14 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	t, _ := template.ParseFiles("edit.html")
 	t.Execute(w, p)
+}
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	// 編集画面で書いた内容をテキストファイルに保存する関数
+	title := r.URL.Path[6:]
+	body := r.FormValue("body")                  // inputの中身を拾うにはこれを使う
+	p := &Page{Title: title, Body: []byte(body)} //文字列をbyteに変換しtitleとともにPage構造体に紐づける
+	p.save()
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
 type Page struct {
