@@ -83,8 +83,14 @@ type BlockStatement struct {
 
 type FunctionLiteral struct {
 	Token      token.Token     // 'fn' トークン
-	Parameters []*Identifier   // 引数
+	Parameters []*Identifier   // 仮引数
 	Body       *BlockStatement // 関数本体
+}
+
+type CallExpression struct {
+	Token     token.Token  // '(' トークン
+	Function  Expression   // Identifier または FunctionLiteral
+	Arguments []Expression // 実引数
 }
 
 func (p *Program) TokenLiteral() string {
@@ -118,6 +124,8 @@ func (bs *BlockStatement) expressionNode()           {}                         
 func (bs *BlockStatement) TokenLiteral() string      { return bs.Token.Literal } // メソッド
 func (fl *FunctionLiteral) expressionNode()          {}                          // メソッド
 func (fl *FunctionLiteral) TokenLiteral() string     { return fl.Token.Literal } // メソッド
+func (ce *CallExpression) expressionNode()           {}                          // メソッド
+func (ce *CallExpression) TokenLiteral() string      { return ce.Token.Literal } // メソッド
 
 func (p *Program) String() string {
 	// メソッド
@@ -241,6 +249,24 @@ func (fl *FunctionLiteral) String() string {
 	out.WriteString(strings.Join(params, ","))
 	out.WriteString(") ")
 	out.WriteString(fl.Body.String())
+
+	return out.String()
+}
+
+func (ce *CallExpression) String() string {
+	// メソッド
+	var out bytes.Buffer
+
+	args := []string{}
+
+	for _, a := range ce.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(ce.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
 
 	return out.String()
 }
