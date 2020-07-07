@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"monkey/token"
+	"strings"
 )
 
 type Node interface {
@@ -80,6 +81,12 @@ type BlockStatement struct {
 	Statements []Statement // { }の中身
 }
 
+type FunctionLiteral struct {
+	Token      token.Token     // 'fn' トークン
+	Parameters []*Identifier   // 引数
+	Body       *BlockStatement // 関数本体
+}
+
 func (p *Program) TokenLiteral() string {
 	// メソッド
 	if len(p.Statements) > 0 {
@@ -109,6 +116,8 @@ func (ie *IfExpression) expressionNode()             {}                         
 func (ie *IfExpression) TokenLiteral() string        { return ie.Token.Literal } // メソッド
 func (bs *BlockStatement) expressionNode()           {}                          // メソッド
 func (bs *BlockStatement) TokenLiteral() string      { return bs.Token.Literal } // メソッド
+func (fl *FunctionLiteral) expressionNode()          {}                          // メソッド
+func (fl *FunctionLiteral) TokenLiteral() string     { return fl.Token.Literal } // メソッド
 
 func (p *Program) String() string {
 	// メソッド
@@ -215,6 +224,23 @@ func (bs *BlockStatement) String() string {
 	for _, s := range bs.Statements {
 		out.WriteString(s.String())
 	}
+
+	return out.String()
+}
+
+func (fl *FunctionLiteral) String() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ","))
+	out.WriteString(") ")
+	out.WriteString(fl.Body.String())
 
 	return out.String()
 }
